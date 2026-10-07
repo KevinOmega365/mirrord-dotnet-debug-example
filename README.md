@@ -1,61 +1,65 @@
 # Debugging .NET Applications with mirrord
 
-<div align="center">
-  <a href="https://mirrord.dev">
-    <img src="images/mirrord.svg" width="150" alt="mirrord Logo"/>
-  </a>
-  <a href="https://dotnet.microsoft.com/">
-    <img src="images/dotnet.svg" width="150" alt=".NET Logo"/>
-  </a>
-</div>
-
 ## Overview
 
 This is a sample web application built with ASP.NET Core and Redis to demonstrate debugging Kubernetes applications using mirrord. The application is a guestbook that stores entries using Redis and displays them on a web interface.
 
 ## Prerequisites
 
-- .NET 9.0 SDK or higher
-- Docker and Docker Compose
-- Kubernetes cluster
-- mirrord CLI installed
-- macOS or Linux (Windows users can use WSL2)
+* VS Code with C# extension
+* .NET 9.0 SDK or higher
+* Docker and Docker Compose
+* kind (K8s in Docker)
+* mirrord CLI installed
+* Windows WSL2
 
-## Quick Start
+## CLI Quick Start
 
-1. Clone the repository:
+### 1. Kind of a Cluster
 
-```bash
-git clone https://github.com/metalbear-co/mirrord-dotnet-debug-example
-cd mirrord-dotnet-debug-example
-```
+1. Open Docker Desktop
+1. Build a container ```docker build -t dotnet-guestbook:local .```
+1. Start a cluster```kind create cluster```
+1. Make the container available ```kind load docker-image dotnet-guestbook:local```
+1. Create the pods ```kubectl create -f ./kube```
 
-2. Deploy to Kubernetes:
+### 2. Hook the local version into the cluster
 
-```bash
-kubectl create -f ./kube
-```
+1. ```mirrord exec -f mirrord.json -- dotnet run --project src```
+1. <http://localhost:8080>
+1. ctrl-c to stop mirrord
+1. Make a change to Program.cs (chage the h1 text on line 125)
+1. ```mirrord exec -f mirrord.json -- dotnet run --project src```
+1. <http://localhost:8080>
+1. ctrl-c to stop mirrord
 
-3. Port-forward Redis to your local machine:
+### 3. VS Code debugger
 
-```bash
-mirrord port-forward -L 6379:redis:6379
-```
+1. Install the mirrord extension
+1. ctrl + shift + P > mirrord: Change Settings
+1. Copy mirrord.json into the .mirrord folder
+1. Click mirrord in the VS Code footer to start it
+1. Run the debugger (F5)
+1. <http://localhost:8080/>
+1. put a break point on line 155
+1. try adding a new guestbook entry
+1. check the value of message in the debug console
 
-4. In a separate terminal, run with mirrord:
+## Cleaning up
 
-```bash
-mirrord exec -f mirrord.json -- dotnet run --project src
-```
+1. ```kind delete cluster```
+1. Docker > Images: delete dotnet-guestbook
+1. Docker > Images: delete kindest/node
 
-The application will be available at http://localhost:8080
+## Notes
 
-## Architecture
+### Architecture
 
 The application consists of:
-- ASP.NET Core web server
-- Redis instance for storing guestbook entries
 
-## License
+* ASP.NET Core web server
+* Redis instance for storing guestbook entries
+
+### License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

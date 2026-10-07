@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
       - name: dotnet-guestbook
-        image: docker.io/ariscub/mirrord-dotnet-example:v1
+        image: dotnet-guestbook:local
+        imagePullPolicy: Never
         ports:
         - containerPort: 8080
         env:
